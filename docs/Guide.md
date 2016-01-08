@@ -44,18 +44,11 @@ Before changing anything, I recommend committing everything in `git` (in case so
 
 When running the setup commands, please read the instructions shown in the terminal. There is usually a reason they are there.
 
-`fastlane` will create all necessary files and folders for you with the following command.
+`fastlane` will create all necessary files and folders for you with the following command. It will use values detected from the project in the working directory.
 
     fastlane init
     
-1. Confirm until you get asked for your *App Identifier*.
-1. Enter the *App Identifier* (*Bundle Identifier*) of your project.
-1. Enter your *Apple ID*: The username, you enter when you login on iTunes Connect.
-1. If you haven't already used [`deliver`](https://github.com/KrauseFx/deliver):
-   - Confirm with `y` to start the setup for [`deliver`](https://github.com/KrauseFx/deliver).
-   - If your app is already in the App Store, confirm with `y` to automatically create a configuration for you. If it's not yet in the store, enter `n`.
-1. If you haven't already used [`snapshot`](https://github.com/KrauseFx/snapshot), confirm with `y` if you want your screenshots to be created automatically.
-1. If you want to [`sigh`](https://github.com/KrauseFx/sigh) to download, renew or create your provisioning profiles, confirm with `y`.
+This will prompt you for your _Apple ID_ in order run [`produce`](https://github.com/fastlane/produce) which will create your app on iTunesConnect and the Apple Developer Center, and enable [`sigh`](https://github.com/KrauseFx/sigh) and [`deliver`](https://github.com/KrauseFx/deliver).
 
 That's it, you should have received a success message. 
 
