@@ -94,7 +94,7 @@ module Fastlane
         ENV['PRODUCE_APPLE_ID'] = Produce::Manager.start_producing
       rescue => exception
         if exception.to_s.include?("The App Name you entered has already been used")
-          Helper.log.info 'It looks like that App Name has already been taken, please enter an alternative.'.yellow
+          Helper.log.info "It looks like that #{project.default_app_name} has already been taken, please enter an alternative.".yellow
           Produce.config[:app_name] = ask("App Name: ".yellow)
           Produce.config[:skip_devcenter] = true
           ENV['PRODUCE_APPLE_ID'] = Produce::Manager.start_producing
