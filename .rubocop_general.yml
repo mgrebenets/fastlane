@@ -7,6 +7,10 @@ Style/ClassCheck:
 Style/BracesAroundHashParameters:
   Enabled: false
 
+# Don't force `var = if-expression` style
+Style/ConditionalAssignment:
+  Enabled: false
+
 Lint/UselessAssignment:
   Exclude:
     - 'spec/**/*'
