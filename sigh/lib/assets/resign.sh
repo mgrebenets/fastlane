@@ -480,7 +480,8 @@ function resign {
 
         log "Resigning application using certificate: '$CERTIFICATE'"
         log "and entitlements: $ENTITLEMENTS"
-        cp -- "$ENTITLEMENTS" "$APP_PATH/archived-expanded-entitlements.xcent"
+        # cp -- "$ENTITLEMENTS" "$APP_PATH/archived-expanded-entitlements.xcent"
+        rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
         /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements="$ENTITLEMENTS" "$APP_PATH"
         checkStatus
     else
@@ -489,7 +490,8 @@ function resign {
         checkStatus
         log "Resigning application using certificate: '$CERTIFICATE'"
         log "and entitlements from provisioning profile: $NEW_PROVISION"
-        cp -- "$TEMP_DIR/newEntitlements" "$APP_PATH/archived-expanded-entitlements.xcent"
+        # cp -- "$TEMP_DIR/newEntitlements" "$APP_PATH/archived-expanded-entitlements.xcent"
+        rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
         /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements="$TEMP_DIR/newEntitlements" "$APP_PATH"
         checkStatus
     fi
