@@ -1,3 +1,3 @@
 module Sigh
-  VERSION = "1.6.111"
+  VERSION = "1.6.222"
 end

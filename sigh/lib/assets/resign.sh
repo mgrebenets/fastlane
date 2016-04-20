@@ -98,6 +98,9 @@ BUNDLE_IDENTIFIER=""
 DISPLAY_NAME=""
 KEYCHAIN=""
 VERSION_NUMBER=""
+BUNDLE_VERSION=""
+# VERSION_NUMBER="3.13.1"
+# BUNDLE_VERSION="3.13.1.16013"
 RAW_PROVISIONS=()
 PROVISIONS_BY_ID=()
 DEFAULT_PROVISION=""
@@ -371,6 +374,8 @@ function resign {
         log "Profile app identifier prefix is '$APP_IDENTIFER_PREFIX'"
     fi
 
+    `PlistBuddy -c "Set :AppIdentifierPrefix $APP_IDENTIFER_PREFIX." "$APP_PATH/Info.plist"`
+
     TEAM_IDENTIFIER=`PlistBuddy -c "Print :Entitlements:com.apple.developer.team-identifier" "$TEMP_DIR/profile.plist" | tr -d '\n'`
     if [ "$TEAM_IDENTIFIER" == "" ];
     then
@@ -403,7 +408,7 @@ function resign {
         if [ "$VERSION_NUMBER" != "$CURRENT_VERSION_NUMBER" ];
         then
             log "Updating the version from '$CURRENT_VERSION_NUMBER' to '$VERSION_NUMBER'"
-            `PlistBuddy -c "Set :CFBundleVersion $VERSION_NUMBER" "$APP_PATH/Info.plist"`
+            `PlistBuddy -c "Set :CFBundleVersion $BUNDLE_VERSION" "$APP_PATH/Info.plist"`
             `PlistBuddy -c "Set :CFBundleShortVersionString $VERSION_NUMBER" "$APP_PATH/Info.plist"`
         fi
     fi
@@ -422,7 +427,7 @@ function resign {
         do
             if [[ "$framework" == *.framework || "$framework" == *.dylib ]]
             then
-                /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" "$framework"
+                /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --deep "$framework"
                 checkStatus
             else
                 log "Ignoring non-framework: $framework"
@@ -481,23 +486,39 @@ function resign {
         log "Resigning application using certificate: '$CERTIFICATE'"
         log "and entitlements: $ENTITLEMENTS"
         # cp -- "$ENTITLEMENTS" "$APP_PATH/archived-expanded-entitlements.xcent"
-        rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
-        /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements="$ENTITLEMENTS" "$APP_PATH"
+        # rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
+        /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements "$ENTITLEMENTS" "$APP_PATH"
         checkStatus
     else
-        log "Extracting entitlements from provisioning profile"
-        PlistBuddy -x -c "Print Entitlements" "$TEMP_DIR/profile.plist" > "$TEMP_DIR/newEntitlements"
+        # log "Extracting entitlements from provisioning profile"
+        log "Extracting entitlements from the app: $APP_PATH"
+        # TODO: This is wrong... provisioning profile does not have all the keychain access groups
+        # Instead must extract from the app
+        /usr/bin/codesign -d --entitlements :"$TEMP_DIR/newEntitlements" "$APP_PATH"
+        PlistBuddy -x -c "Print Entitlements" "$TEMP_DIR/profile.plist" > "$TEMP_DIR/profileEntitlements"
         checkStatus
         log "Resigning application using certificate: '$CERTIFICATE'"
-        log "and entitlements from provisioning profile: $NEW_PROVISION"
+        # log "and entitlements from provisioning profile: $NEW_PROVISION"
+        log "and entitlements from the app: $APP_PATH"
+
+        # echo "Deleting com.apple.developer.team-identifier entry"
+	    #    PlistBuddy -c "Delete :com.apple.developer.team-identifier" "$TEMP_DIR/newEntitlements"
+
+        echo "New entitlements:"
+        cat "$TEMP_DIR/newEntitlements"
+
+        echo ""
+        echo "Profile entitlements:"
+        cat "$TEMP_DIR/profileEntitlements"
         # cp -- "$TEMP_DIR/newEntitlements" "$APP_PATH/archived-expanded-entitlements.xcent"
-        rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
-        /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements="$TEMP_DIR/newEntitlements" "$APP_PATH"
+        # rm -f "$APP_PATH/archived-expanded-entitlements.xcent"
+        /usr/bin/codesign ${VERBOSE} -f -s "$CERTIFICATE" --entitlements "$TEMP_DIR/newEntitlements" "$APP_PATH"
         checkStatus
     fi
 
     # Remove the temporary files if they were created before generating ipa
     rm -f "$TEMP_DIR/newEntitlements"
+    rm -f "$TEMP_DIR/profileEntitlements"
     rm -f "$TEMP_DIR/profile.plist"
 }
 
